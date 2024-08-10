@@ -1,0 +1,18 @@
+{
+  "name": "websocket-project",
+  "version": "1.0.0",
+  "description": "WebSocket Server and Listener for Action Handling and Logging",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "client": "node client.js"
+  },
+  "author": "Shubham Maske",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "lodash": "^4.17.21",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5"
+  }
+}
