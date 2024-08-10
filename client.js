@@ -1,35 +1,12 @@
+
 const io = require('socket.io-client');
 const socket = io('http://localhost:3000');
 
 const receivedUpdates = new Set();
 const receivedOrders = new Map();
 
+console.log("Action Taken:")
 const processUpdate = (update) => {
-
-//   if (!receivedUpdates.has(JSON.stringify(update))) {
-//     //if order does not exist
-//     receivedUpdates.add(JSON.stringify(update));
-//     // console.log('Processing update:', update);
-    
-
-
-//     // Determine action based on update status
-//     switch (update.status) {
-//       case 'complete':
-//         console.log(`For AppOrderID: ${update.AppOrderID} : placeOrder`);
-//         break;
-//       case 'cancelled':
-//         console.log(`For AppOrderID: ${update.AppOrderID} : cancelOrder`);
-//         break;
-//       case 'open':
-//         console.log(`For AppOrderID: ${update.AppOrderID} : modifyOrder`);
-//         break;
-//     }
-//   } else if(((update.priceType === "LMT" || update.priceType === "SL-LMT" || update.priceType === "SL-MKT") && update.status === "cancelled")) {
-//     console.log(`For AppOrderID: ${update.AppOrderID} : cancelOrder`);
-//   } else {
-//     // if order already exist
-//     console.log(`For AppOrderID: ${update.AppOrderID} : modifyOrder`);
 
 const { priceType, status, AppOrderID } = update;
 
@@ -40,22 +17,15 @@ const orderExists = receivedOrders.has(AppOrderID);
 let action;
 if (status === 'cancelled') {
   if (['LMT', 'SL-LMT', 'SL-MKT'].includes(priceType)) {
-    action = `For AppOrderID: ${AppOrderID} : cancelOrder`;
-    console.log(action)
+    action = 'cancelOrder';
+    receivedOrders.delete(AppOrderID)
   }
 } else if (priceType === 'MKT' && status === 'complete') {
-  action = orderExists ? `For AppOrderID: ${AppOrderID} : modifyOrder` : `For AppOrderID: ${AppOrderID} : placeOrder`;
-  console.log(action)
-} else if (priceType === 'LMT') {
-  action = status === 'open'
-    ? (orderExists ? `For AppOrderID: ${AppOrderID} : modifyOrder` : `For AppOrderID: ${AppOrderID} : placeOrder`)
-    : '';
-    console.log(action)
-} else if (['SL-LMT', 'SL-MKT'].includes(priceType)) {
-  action = status === 'pending'
-    ? (orderExists ? `For AppOrderID: ${AppOrderID} : modifyOrder` : `For AppOrderID: ${AppOrderID} : placeOrder`)
-    : '';
-    console.log(action)
+    action = orderExists ? 'modifyOrder' : 'placeOrder';
+} else if (['LMT', 'SL-LMT', 'SL-MKT'].includes(priceType)) {
+    if (status === 'open' || status === 'pending') {
+        action = orderExists ? 'modifyOrder' : 'placeOrder';
+    }
 }
 
 // Update existing orders
@@ -64,7 +34,8 @@ if (status !== 'cancelled') {
 } else {
   receivedOrders.delete(AppOrderID);
 }
-//   }
+
+console.log(`For AppOrderID: ${AppOrderID} : ${action}`)
 };
 
 socket.on('orderUpdate', (update) => {
@@ -78,6 +49,3 @@ socket.on('connect', () => {
 socket.on('disconnect', () => {
   console.log('Disconnected from server');
 });
-
-
-
